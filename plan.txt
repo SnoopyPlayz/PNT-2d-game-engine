@@ -1,0 +1,6 @@
+vertex and indecies model loading [X]X
+texture loading [X]
+lighting []
+SSAO []
+2d menu renderer []
+
