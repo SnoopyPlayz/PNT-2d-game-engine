@@ -1,38 +1,41 @@
-#include <cglm/cglm.h>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <stdio.h>
 #include "fileLoad.h"
+#include "shader.h"
 
-// OPENGL INIT
+int screenX, screenY;
 unsigned int shaderProgram = 0;
 GLFWwindow* window = 0;
 
-void sendUniform4f(int shaderProgram, char * name, mat4 data){
-        int uniformLoc = glGetUniformLocation(shaderProgram, name);
-        glUniformMatrix4fv(uniformLoc, 1, GL_FALSE, (const float *) data);
-}
 
-void drawModel(Model m, unsigned int texture, vec3 rotation, vec3 position){
-	mat4 model;
-        glm_mat4_identity(model);
+typedef float Vec3[3];
+unsigned int ShaderPosUniform = 0;
 
-	glm_translate(model, position);
-	glm_rotate_x(model, glm_rad(rotation[0]), model);
-	glm_rotate_y(model, glm_rad(rotation[1]), model);
-	glm_rotate_z(model, glm_rad(rotation[2]), model);
-
-	sendUniform4f(shaderProgram, "model", model);
-
-	glBindVertexArray(m.VAO);
+void drawModel(Texture * t, int x, int y){
 	
-	glBindTexture(GL_TEXTURE_2D, texture);
-	glDrawElements(GL_TRIANGLES, m.numIndices, GL_UNSIGNED_INT, 0);
+/*
+		 ^			     ^
+	opengl	 |			     |	silnik
+	-1 <-----|------> 1 	<---   0 <---|----> 1920
+		 |			     |
+		\/			    \/
+*/
+	float Posx = (2.0f * (float)x) / screenX - 1.0f; //(Muj kod) zamienia od 0 do 1920 na -1 do 1 dla opengl
+	float Posy = (2.0f * (float)(y * -1)) / screenY + 1.0f; 
+	
+	glUniform3fv(ShaderPosUniform, 1, (Vec3) {Posx,Posy,0});
+
+	glBindVertexArray(t->VAO);
+
+	glBindTexture(GL_TEXTURE_2D, t->texture);
+	glDrawElements(GL_TRIANGLES, t->numIndices, GL_UNSIGNED_INT, 0);
 }
 
-int screenX, screenY;
 void framebuffer_size_callback(GLFWwindow* window, int width, int height){
         screenX = width;
         screenY = height;
+	
         glViewport(0, 0, width, height);
 }
 
@@ -58,8 +61,14 @@ int openglInit(){
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
+	glCullFace(GL_FRONT);
 
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+	// shader
+	shaderProgram = createShaderProgram("vertexShader.sh","fragmentShader.sh");
+	glUseProgram(shaderProgram);
+	ShaderPosUniform = glGetUniformLocation(shaderProgram, "pos");
 
 	return 0;
 }

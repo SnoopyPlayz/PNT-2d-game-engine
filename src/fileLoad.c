@@ -1,14 +1,15 @@
 #include <GL/glew.h>
+#include <GLFW/glfw3.h>
+#include <stdio.h>
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+#include "opengl.h"
 
-// TEXTURE			TEXTURE
-
-unsigned int loadTexture(char* fileLocation) {
+unsigned int loadTexture(char* fileLocation, int * width, int * height) {
 	stbi_set_flip_vertically_on_load(1);
 
- 	int width, height, nrChannels;
- 	unsigned char *data = stbi_load(fileLocation, &width, &height, &nrChannels, 0);
+ 	int nrChannels;
+ 	unsigned char *data = stbi_load(fileLocation, width, height, &nrChannels, 0);
 	 
  	if (!data){
  		printf("error loading image file: %s",fileLocation);
@@ -25,23 +26,55 @@ unsigned int loadTexture(char* fileLocation) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE,data);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, *width, *height, 0, GL_RGBA * (nrChannels == 4) + GL_RGB * (nrChannels == 3), GL_UNSIGNED_BYTE,data);
+
 	glGenerateMipmap(GL_TEXTURE_2D);
-	
+
 	stbi_image_free(data);
 	return texture;
 }
 
-// PLY MODEL LOADING			PLY MODEL LOADING
-
-typedef struct Model {
+/*
+typedef struct Texture {
 	unsigned int VAO;
 	unsigned int VBO;
 	unsigned int EBO;
 	int numIndices;
-} Model;
+	unsigned int texture;
+	int width;
+	int height;
+} Texture;*/
 
-Model bufferModel(float * vert, int * inds, int vertSize, int indsSize){
+Texture loadImage2d(char * texturePath, int x, int y){
+	int texWidth, texHeight;
+	unsigned int texture = loadTexture(texturePath, &texWidth, &texHeight);
+	
+	int screenX,screenY; //screen size
+	glfwGetWindowSize(window, &screenX, &screenY);
+
+	//image size
+	texWidth +=x ;
+	texHeight += y;
+	float sizeX = texWidth / ((float)screenX * 0.52);
+	float sizeY = texHeight / (-(float)screenY * 0.52);
+
+	float vert[] = {
+		//  texture od 0px do 1000+px --> opengl od -1 do 1
+		sizeX,  0.0f,		1.0f,1.0f, //top right
+		sizeX,  sizeY,		1.0f,0.0f, //bottom right
+		0.0f,   sizeY,		0.0f,0.0f, //bottom left
+		0.0f, 0.0f,		0.0f,1.0f , //top left
+	};
+
+	int inds[] = {
+		0, 1, 3,
+		1, 2, 3
+	};
+
+	int vertSize = sizeof(vert);
+	int indsSize = sizeof(inds);
+
+	//	Buffer texture
         unsigned int VAO;
         glGenVertexArrays(1, &VAO);
         glBindVertexArray(VAO);
@@ -55,78 +88,13 @@ Model bufferModel(float * vert, int * inds, int vertSize, int indsSize){
         glGenBuffers(1, &EBO);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, indsSize, inds, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)0);
+	//pos
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)0);
+	glEnableVertexAttribArray(0);
+	//tex
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)(2 * sizeof(float)));
 	glEnableVertexAttribArray(1);
-
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) (sizeof(float) * 6));
-	glEnableVertexAttribArray(2);
-
-	return (Model) {VAO,VBO,EBO,indsSize};
-}
-
-void saveInds(int * inds, int indsPos, char readline[100]){
-	int x,y,z,a;
-
-	sscanf(readline, "%*d %d %d %d %d", &x, &y, &z, &a);
-
-	inds[indsPos] = x; //Triangle 1
-	inds[indsPos+1] = y;
-	inds[indsPos+2] = z;
-
-	if (!a) // is there another triangle
-		return;
 	
-	inds[indsPos+3] = x; //Triangle 2
-	inds[indsPos+4] = z;
-	inds[indsPos+5] = a;
+
+	return (Texture) {VAO,VBO,EBO,indsSize,texture,texWidth,texHeight,0};
 }
-
-void saveVerts(float * V, int vertPos, char readline[100]){
-	sscanf(readline, "%f %f %f %f %f %f %f %f",
-			&V[vertPos],&V[vertPos+1],&V[vertPos+2],&V[vertPos+3],
-			&V[vertPos+4],&V[vertPos+5],&V[vertPos+6],&V[vertPos+7]);
-}
-
-Model loadModel(char * filePath){
-        FILE * modelFile = fopen(filePath,"r");
-	
-        if (!modelFile){
-		printf("NO MODEL FILE %s \n",filePath);
-		return (Model) {};
-	}
-
-        char readline[100];
-	int numVert = 1, numInds = 1;
-
-        while (fgets(readline, 100, modelFile)){ // Model metadata
-
-		if(!strncmp(readline, "element vertex", 14)){
-			sscanf(readline,"%*s %*s %d", &numVert);
-		}
-		if(!strncmp(readline, "element face", 12)){
-			sscanf(readline,"%*s %*s %d", &numInds);
-		}
-		if(!strncmp(readline, "end_header", 10)){
-			break;
-		}
-	}
-
-	printf("%d \n", numVert);
-	printf("%d \n", numInds);
-	float vert[numVert * 8];
-	int inds[numInds * 6];
-
-	for (int i = 0; i < numVert*8; i+=8){ // Load Vertex and Index data
-		fgets(readline, 100, modelFile);
-		saveVerts(vert, i, readline);
-	}
-	
-	for (int i = 0; i < numInds*6; i+=6){
-		fgets(readline, 100, modelFile);
-		saveInds(inds, i, readline);
-	}
-
-	return bufferModel(vert, inds, sizeof(vert), sizeof(inds));
-}
-
