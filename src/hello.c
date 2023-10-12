@@ -2,6 +2,7 @@
 #include <GLFW/glfw3.h>
 #include <stdio.h>
 #include <math.h>
+#include <stdlib.h>
 #include "opengl.h"
 #include "fileLoad.h"
 #include "shader.h"
@@ -13,9 +14,9 @@ void update(){
 	glfwGetCursorPos(window,&cursorX,&cursorY);
 }
 
-Texture car = (Texture) {};
+Texture face = (Texture) {};
 Texture cube = (Texture) {};
-Texture menu1 = (Texture) {};
+Texture play = (Texture) {};
 Texture room = (Texture) {};
 
 enum GameState{
@@ -25,17 +26,17 @@ enum GameState{
 };
 enum GameState gameState = menu;
 
+
 void renderMenu(){
-	if (drawMenu(&menu1, 800, 100)){
+	if (drawMenu(&play, 800, 100))
 		gameState = game;
-		printf("%s %d \n", "menu dziala",(int)glfwGetTime());
-	}
+
 }
 
 void renderGame(){
 	drawModel(&room, 0, 0);
-	drawModel(&car, 0, 900);
-	drawModel(&car, 200, 900);
+	drawModel(&face, 0, 900);
+	drawModel(&face, 200, 900);
 }
 
 void renderPause(){
@@ -45,7 +46,7 @@ void render(){
 	glClearColor(0.1f,0.1f,0.0f,1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
-	drawModel(&car, cursorX, cursorY);
+	drawModel(&face, cursorX, cursorY);
 
 	switch (gameState) {
 		case game:
@@ -64,9 +65,11 @@ void render(){
 int main(){
 	openglInit();
 
-   	car = loadImage2d("../res/awesomeface.png",0,0);
+	Texture *array = (Texture *)malloc(sizeof(Texture));
+
+   	face = loadImage2d("../res/awesomeface.png",0,0);
    	cube = loadImage2d("../res/container.jpg",0,0);
-   	menu1 = loadImage2d("../res/menu.png",0,0);
+   	play = loadImage2d("../res/menu.png",0,0);
    	room = loadImage2d("../res/room2.png",100,0);
 
 	//loop
@@ -96,7 +99,7 @@ int main(){
 		FPSTimes += 1;	
 		if (newTime - FPSOldtime > 1.0){
 			char FPSstring[23];
-			sprintf(FPSstring, "PNC    FPS: %d", FPSTimes);
+			sprintf(FPSstring, "PNT FPS: %d", FPSTimes);
 			glfwSetWindowTitle(window, FPSstring);
 
 			FPSTimes = 0;

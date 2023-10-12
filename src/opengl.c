@@ -21,8 +21,8 @@ void drawModel(Texture * t, int x, int y){
 		 |			     |
 		\/			    \/
 */
-	float Posx = (2.0f * (float)x) / screenX - 1.0f; //(Muj kod) zamienia od 0 do 1920 na -1 do 1 dla opengl
-	float Posy = (2.0f * (float)(y * -1)) / screenY + 1.0f; 
+	float Posx = (2.0f * (float)x) / 1920 - 1.0f; //(Muj kod) zamienia od 0 do 1920 na -1 do 1 dla opengl
+	float Posy = (2.0f * (float)(y * -1)) / 1080 + 1.0f; 
 	
 	glUniform3fv(ShaderPosUniform, 1, (Vec3) {Posx,Posy,0});
 

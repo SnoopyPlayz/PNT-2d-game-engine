@@ -49,11 +49,10 @@ Texture loadImage2d(char * texturePath, int x, int y){
 	int texWidth, texHeight;
 	unsigned int texture = loadTexture(texturePath, &texWidth, &texHeight);
 	
-	int screenX,screenY; //screen size
-	glfwGetWindowSize(window, &screenX, &screenY);
+	int screenX = 1920, screenY = 1080; //screen size
 
 	//image size
-	texWidth +=x ;
+	texWidth += x;
 	texHeight += y;
 	float sizeX = texWidth / ((float)screenX * 0.52);
 	float sizeY = texHeight / (-(float)screenY * 0.52);
