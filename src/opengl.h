@@ -7,4 +7,5 @@ extern GLFWwindow* window;
 extern int screenX, screenY;
 
 void drawModel(Texture * Texture, int x, int y);
+int drawMenu(Texture * Texture, int x, int y);
 void openglInit();

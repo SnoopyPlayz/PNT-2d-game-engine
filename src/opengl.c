@@ -32,6 +32,28 @@ void drawModel(Texture * t, int x, int y){
 	glDrawElements(GL_TRIANGLES, t->numIndices, GL_UNSIGNED_INT, 0);
 }
 
+int drawMenu(Texture * t, int x, int y){
+	drawModel(t, x, y);
+
+	int screenX,screenY; //screen size
+	glfwGetWindowSize(window, &screenX, &screenY);
+	
+
+	double cursorX,cursorY;
+	glfwGetCursorPos(window,&cursorX,&cursorY);
+	// zmien kolizie menu w zależności od rezolucji okienka
+	
+	float scaleX =  (((float)screenX * 0.5) / t->width)*0.5;
+	float scaleY =  ((float)screenY * 0.5) / t->height;
+
+	if (cursorX < t->width * scaleX + x && cursorX > x 
+			&& cursorY < t->height * scaleY + y && cursorY > y 
+			&& glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT)){
+		return 1;
+	}
+	return 0;
+}
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height){
         screenX = width;
         screenY = height;

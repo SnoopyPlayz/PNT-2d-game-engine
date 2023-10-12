@@ -6,65 +6,58 @@
 #include "fileLoad.h"
 #include "shader.h"
 
-float rot = 0;
 double cursorX,cursorY;
 void update(){
 	glfwPollEvents();
 	
-	
 	glfwGetCursorPos(window,&cursorX,&cursorY);
-
-	//keyInput();
-	//mouseInput();
-	rot += 10;
-	if (rot > 1900){
-		rot = 0;
-	};
 }
 
 Texture car = (Texture) {};
 Texture cube = (Texture) {};
-Texture menu = (Texture) {};
+Texture menu1 = (Texture) {};
 Texture room = (Texture) {};
-int drawMenu(Texture * t, int x, int y){
-	drawModel(t, x, y);
 
-	int screenX,screenY; //screen size
-	glfwGetWindowSize(window, &screenX, &screenY);
-	
+enum GameState{
+	menu,
+	pause,
+	game,
+};
+enum GameState gameState = menu;
 
-	// zmien kolizie menu w zależności od rezolucji okienka
-	
-	float scaleX =  (((float)screenX * 0.5) / t->width)*0.5;
-	float scaleY =  ((float)screenY * 0.5) / t->height;
-
-	if (cursorX < t->width * scaleX + x && cursorX > x 
-			&& cursorY < t->height * scaleY + y && cursorY > y 
-			&& glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT)){
-		return 1;
+void renderMenu(){
+	if (drawMenu(&menu1, 800, 100)){
+		gameState = game;
+		printf("%s %d \n", "menu dziala",(int)glfwGetTime());
 	}
-	return 0;
 }
 
-int menuon=0;
+void renderGame(){
+	drawModel(&room, 0, 0);
+	drawModel(&car, 0, 900);
+	drawModel(&car, 200, 900);
+}
+
+void renderPause(){
+}
+
 void render(){
 	glClearColor(0.1f,0.1f,0.0f,1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
 	drawModel(&car, cursorX, cursorY);
-	drawModel(&room, 0, 0);
 
-
-	if (!menuon){
-		if (drawMenu(&menu, 800, 100)){
-			menuon=1;
-			printf("%s %d \n", "menu dziala",(int)glfwGetTime());
-		}
-	}else {
-		drawModel(&car, 0, 900);
-		drawModel(&car, 200, 900);
+	switch (gameState) {
+		case game:
+			renderGame();
+			break;
+		case menu:
+			renderMenu();
+			break;
+		case pause:
+			renderPause();
+			break;
 	}
-
 	glfwSwapBuffers(window);
 }
 
@@ -73,7 +66,7 @@ int main(){
 
    	car = loadImage2d("../res/awesomeface.png",0,0);
    	cube = loadImage2d("../res/container.jpg",0,0);
-   	menu = loadImage2d("../res/menu.png",0,0);
+   	menu1 = loadImage2d("../res/menu.png",0,0);
    	room = loadImage2d("../res/room2.png",100,0);
 
 	//loop
