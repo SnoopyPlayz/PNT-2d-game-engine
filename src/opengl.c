@@ -2,6 +2,7 @@
 #include <GLFW/glfw3.h>
 #include <stdio.h>
 #include "fileLoad.h"
+#include "opengl.h"
 #include "shader.h"
 
 int screenX, screenY;
@@ -12,7 +13,7 @@ GLFWwindow* window = 0;
 typedef float Vec3[3];
 unsigned int ShaderPosUniform = 0;
 
-void drawModel(Texture * t, int x, int y){
+void drawModel(Texture * t){
 	
 /*
 		 ^			     ^
@@ -21,10 +22,10 @@ void drawModel(Texture * t, int x, int y){
 		 |			     |
 		\/			    \/
 */
-	float Posx = (2.0f * (float)x) / 1920 - 1.0f; //(Muj kod) zamienia od 0 do 1920 na -1 do 1 dla opengl
-	float Posy = (2.0f * (float)(y * -1)) / 1080 + 1.0f; 
+	float Posx = (2.0f * (float)t->x) / 1920 - 1.0f; //(Muj kod) zamienia od 0 do 1920 na -1 do 1 dla opengl
+	float Posy = (2.0f * (float)(t->y * -1)) / 1080 + 1.0f; 
 	
-	glUniform3fv(ShaderPosUniform, 1, (Vec3) {Posx,Posy,0});
+	glUniform3fv(ShaderPosUniform, 1, (Vec3) {Posx,Posy,t->z,0});
 
 	glBindVertexArray(t->VAO);
 
@@ -32,22 +33,25 @@ void drawModel(Texture * t, int x, int y){
 	glDrawElements(GL_TRIANGLES, t->numIndices, GL_UNSIGNED_INT, 0);
 }
 
-int drawMenu(Texture * t, int x, int y){
-	drawModel(t, x, y);
+int drawMenu(Texture * t){
 
-	int screenX,screenY; //screen size
-	glfwGetWindowSize(window, &screenX, &screenY);
-	
+	drawModel(t);
+
+	return colisionBox(t->x, t->y, t->width, t->height);
+}
+
+int colisionBox(int x, int y, int width, int height){
 
 	double cursorX,cursorY;
 	glfwGetCursorPos(window,&cursorX,&cursorY);
 	// zmien kolizie menu w zależności od rezolucji okienka
 	
-	float scaleX =  (((float)screenX * 0.5) / t->width)*0.5;
-	float scaleY =  ((float)screenY * 0.5) / t->height;
+	float topLeft = width + x;
+	float bottomLeft = height + y;
 
-	if (cursorX < t->width * scaleX + x && cursorX > x 
-			&& cursorY < t->height * scaleY + y && cursorY > y 
+	// TODO napraw KOD
+	if (cursorX < topLeft && cursorX > x 
+			&& cursorY < bottomLeft && cursorY > y 
 			&& glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT)){
 		return 1;
 	}

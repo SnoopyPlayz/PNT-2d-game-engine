@@ -45,17 +45,18 @@ typedef struct Texture {
 	int height;
 } Texture;*/
 
-Texture loadImage2d(char * texturePath, int x, int y){
+Texture loadImage2d(char * texturePath, int width, int height, int x, int y){
 	int texWidth, texHeight;
 	unsigned int texture = loadTexture(texturePath, &texWidth, &texHeight);
-	
+
+	texWidth += width;
+	texHeight += height;
+
 	int screenX = 1920, screenY = 1080; //screen size
 
-	//image size
-	texWidth += x;
-	texHeight += y;
-	float sizeX = texWidth / ((float)screenX * 0.52);
-	float sizeY = texHeight / (-(float)screenY * 0.52);
+
+	float sizeX = texWidth / ((float)screenX * 0.5);
+	float sizeY = texHeight / (-(float)screenY * 0.5);
 
 	float vert[] = {
 		//  texture od 0px do 1000+px --> opengl od -1 do 1
@@ -95,5 +96,5 @@ Texture loadImage2d(char * texturePath, int x, int y){
 	glEnableVertexAttribArray(1);
 	
 
-	return (Texture) {VAO,VBO,EBO,indsSize,texture,texWidth,texHeight,0};
+	return (Texture) {VAO, VBO, EBO, indsSize, texture, texWidth, texHeight, x, y};
 }

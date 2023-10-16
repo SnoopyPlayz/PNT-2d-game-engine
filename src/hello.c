@@ -18,6 +18,7 @@ Texture face = (Texture) {};
 Texture cube = (Texture) {};
 Texture play = (Texture) {};
 Texture room = (Texture) {};
+Texture nextButton = (Texture) {};
 
 enum GameState{
 	menu,
@@ -28,15 +29,19 @@ enum GameState gameState = menu;
 
 
 void renderMenu(){
-	if (drawMenu(&play, 800, 100))
+	if (drawMenu(&play))
 		gameState = game;
 
 }
 
 void renderGame(){
-	drawModel(&room, 0, 0);
-	drawModel(&face, 0, 900);
-	drawModel(&face, 200, 900);
+
+	drawModel(&room);
+	drawModel(&face);
+	drawModel(&face);
+
+	if (drawMenu(&nextButton))
+		gameState = game;
 }
 
 void renderPause(){
@@ -46,7 +51,9 @@ void render(){
 	glClearColor(0.1f,0.1f,0.0f,1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
-	drawModel(&face, cursorX, cursorY);
+	face.x = cursorX, face.y = cursorY;
+
+	drawModel(&face);
 
 	switch (gameState) {
 		case game:
@@ -65,12 +72,13 @@ void render(){
 int main(){
 	openglInit();
 
-	Texture *array = (Texture *)malloc(sizeof(Texture));
+	//Texture *array = (Texture *)malloc(sizeof(Texture));
 
-   	face = loadImage2d("../res/awesomeface.png",0,0);
-   	cube = loadImage2d("../res/container.jpg",0,0);
-   	play = loadImage2d("../res/menu.png",0,0);
-   	room = loadImage2d("../res/room2.png",100,0);
+   	face = loadImage2d("../res/awesomeface.png",0,0,0,0);
+   	cube = loadImage2d("../res/container.jpg",0,0,0,0);
+   	play = loadImage2d("../res/menu.png",0,0,800,100);
+   	room = loadImage2d("../res/room2.png",100,0,0,0);
+   	nextButton = loadImage2d("../res/nextButton.png",-100,-100,1520,400);
 
 	//loop
 	double timePerFrame = 1./60.; 

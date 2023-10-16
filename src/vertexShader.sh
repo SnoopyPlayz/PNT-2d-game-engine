@@ -6,6 +6,6 @@ uniform vec3 pos;
 out vec2 TexCoord;
 
 void main(){
-	gl_Position = vec4(aPos[0] + pos[0], aPos[1] + pos[1], 0.2,1);
+	gl_Position = vec4(aPos[0] + pos[0], aPos[1] + pos[1], pos[2],1);
 	TexCoord = aTexCoord;
 };
