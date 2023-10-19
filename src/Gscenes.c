@@ -8,27 +8,17 @@ Texture nextButton = (Texture) {};
 
 int currentScene;
 void updateScene(){
-	nextButton.x = 1520;
-	if (currentScene > 0 && colisionTex(&nextButton))
-		currentScene--;
-
-	nextButton.x = 0;
-	if (currentScene < 2 && colisionTex(&nextButton))
-		currentScene++;
-}
-
-void renderScene(){
 	drawModel(&Scenes[currentScene]);
 
 	nextButton.x = 1520;
-	if (currentScene > 0)
-		drawModel(&nextButton);
+	if (currentScene > 0 && drawMenu(&nextButton))
+		currentScene--;
 
 	nextButton.x = 0;
-	if (currentScene < 2)
-		drawModel(&nextButton);
-
+	if (currentScene < 2 && drawMenu(&nextButton))
+		currentScene++;
 }
+
 void initScene(){
 	Scenes[0] = loadStrechedImage("../res/Right.png",100,0,0,0);
    	Scenes[1] = loadStrechedImage("../res/room2.png",100,0,0,0);

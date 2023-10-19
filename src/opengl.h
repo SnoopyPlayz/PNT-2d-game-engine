@@ -7,6 +7,6 @@ extern GLFWwindow* window;
 extern int screenX, screenY;
 
 int colisionBox(int x, int y, int width, int height);
-int colisionTex(Texture * t);
+int drawMenu(Texture * t);
 void drawModel(Texture * t);
 int openglInit();

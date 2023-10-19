@@ -33,7 +33,8 @@ void drawModel(Texture * t){
 	glDrawElements(GL_TRIANGLES, t->numIndices, GL_UNSIGNED_INT, 0);
 }
 
-inline int colisionTex(Texture * t){
+inline int drawMenu(Texture * t){
+	drawModel(t);
 	return colisionBox(t->x, t->y, t->width, t->height);
 }
 

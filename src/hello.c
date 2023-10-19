@@ -8,15 +8,7 @@
 #include "shader.h"
 #include "Gscenes.h"
 
-double cursorX,cursorY;
-void update(){
-	glfwPollEvents();
-	
-	glfwGetCursorPos(window,&cursorX,&cursorY);
-	updateScene();
-}
-
-Texture face = (Texture) {};
+Texture cursor = (Texture) {};
 Texture cube = (Texture) {};
 Texture play = (Texture) {};
 
@@ -28,85 +20,84 @@ enum GameState{
 enum GameState gameState = menu;
 
 
-void renderMenu(){
-	if (colisionTex(&play))
+double cursorX,cursorY;
+void updateMenu(){
+	if (drawMenu(&play))
 		gameState = game;
-	drawModel(&play);
 }
 
-void renderGame(){
-	drawModel(&face);
-	drawModel(&face);
-	renderScene();
+void updateGame(){
+	updateScene();
 }
 
-void renderPause(){
+void updatePause(){
 }
 
-void render(){
+void update(){
+	glfwPollEvents();
+	glfwGetCursorPos(window,&cursorX,&cursorY);
+
 	glClearColor(0.1f,0.1f,0.0f,1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
-	face.x = cursorX, face.y = cursorY;
-
-	drawModel(&face);
+	cursor.x = cursorX, cursor.y = cursorY;
+	drawModel(&cursor);
 
 	switch (gameState) {
 		case game:
-			renderGame();
+			updateGame();
 			break;
 		case menu:
-			renderMenu();
+			updateMenu();
 			break;
 		case pause:
-			renderPause();
+			updatePause();
 			break;
 	}
 	glfwSwapBuffers(window);
 }
+void initGame(){
+	initScene();
+}
 
 int main(){
 	openglInit();
-	initScene();
+	initGame();
 
-	//Texture *array = (Texture *)malloc(sizeof(Texture));
-
-   	face = loadImage2d("../res/awesomeface.png",0,0);
+   	cursor = loadImage2d("../res/awesomeface.png",0,0);
+	cursor.z = 0.1;
    	play = loadImage2d("../res/menu.png",800,100);
 
 	//loop
 	double timePerFrame = 1./60.; 
 
 	double currentTime = glfwGetTime();
-	double accumulator = 0.0;
 
 	int FPSTimes = 0;
-	int FPSOldtime = 0;
+	double FPSOldtime = 0;
+	double delta = 0.;
 
 	while (!glfwWindowShouldClose(window)) {
 		double newTime = glfwGetTime();
-		double frameTime = newTime - currentTime;
-
+		delta += (newTime - currentTime) / timePerFrame;
 		currentTime = newTime;
 
-		accumulator += frameTime;
-
-		while (accumulator >= timePerFrame) {
+		while (delta >= 1) {
 			update();
-			accumulator -= timePerFrame;
-		}
-		render();
+			delta -= 1;
 
-		//FPS counter
-		FPSTimes += 1;	
-		if (newTime - FPSOldtime > 1.0){
-			char FPSstring[23];
-			sprintf(FPSstring, "PNT FPS: %d", FPSTimes);
-			glfwSetWindowTitle(window, FPSstring);
+			//FPS counter
+			FPSTimes += 1;	
+			if (newTime - FPSOldtime > 1.0){
+				char FPSstring[23];
+				sprintf(FPSstring, "PNT FPS: %d", FPSTimes);
+				glfwSetWindowTitle(window, FPSstring);
 
-			FPSTimes = 0;
-			FPSOldtime = newTime;
+				FPSTimes = 0;
+				FPSOldtime = newTime;
+			}
 		}
+
 	}
 	glfwTerminate();
 }
