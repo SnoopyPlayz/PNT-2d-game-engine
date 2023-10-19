@@ -3,44 +3,44 @@
 #include <GL/glew.h>
 
 void shaderError(unsigned int vertexShader){
-           int success;
-           char infoLog[512];
-           glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-           if(!success){
-                   glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-                   printf("vertex compilation failed %s \n",infoLog);
-           }
-   }
+	int success;
+	char infoLog[512];
+	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+	if(!success){
+		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
+		printf("vertex compilation failed %s \n",infoLog);
+	}
+}
 
 unsigned int compileShader(unsigned int shaderType,const char ** shaderSource){
-  	  unsigned int shader;
-          shader = glCreateShader(shaderType);
-  
-          glShaderSource(shader, 1, shaderSource, NULL);
-          glCompileShader(shader);
-          shaderError(shader);
-          return shader;
-   }
+	unsigned int shader;
+	shader = glCreateShader(shaderType);
+
+	glShaderSource(shader, 1, shaderSource, NULL);
+	glCompileShader(shader);
+	shaderError(shader);
+	return shader;
+}
 
 unsigned int createShader(unsigned int shaderType,char * filePath){
 	FILE * shaderfile;
 
 	shaderfile = fopen(filePath,"r");
-	
-	char readline[100];
-	char allLines[1000] = "";
+
 	if (!shaderfile){
 		printf("no shader file");
 		return 0;
 	}
 
-	
+	char readline[100];
+	char allLines[1000] = "";
+
 	while (fgets(readline, 100, shaderfile)){
 		strcat(allLines,readline);	
 	};
 	fclose(shaderfile);
-	const char * shaderSource = allLines;
 
+	const char * shaderSource = allLines;
 	return compileShader(shaderType,&shaderSource);
 }
 

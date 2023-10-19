@@ -1,3 +1,4 @@
+#include "fileLoad.h"
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <stdio.h>
@@ -26,7 +27,9 @@ unsigned int loadTexture(char* fileLocation, int * width, int * height) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, *width, *height, 0, GL_RGBA * (nrChannels == 4) + GL_RGB * (nrChannels == 3), GL_UNSIGNED_BYTE,data);
+	int GLRgbChanels = GL_RGBA * (nrChannels == 4) + GL_RGB * (nrChannels == 3);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, *width, *height, 0, GLRgbChanels, GL_UNSIGNED_BYTE, data);
 
 	glGenerateMipmap(GL_TEXTURE_2D);
 
@@ -34,32 +37,24 @@ unsigned int loadTexture(char* fileLocation, int * width, int * height) {
 	return texture;
 }
 
-/*
-typedef struct Texture {
-	unsigned int VAO;
-	unsigned int VBO;
-	unsigned int EBO;
-	int numIndices;
-	unsigned int texture;
-	int width;
-	int height;
-} Texture;*/
+inline Texture loadImage2d(char *fileLocation, int x, int y){
+	return loadStrechedImage(fileLocation,0,0,x,y);
+}
 
-Texture loadImage2d(char * texturePath, int width, int height, int x, int y){
+Texture loadStrechedImage(char * texturePath, int width, int height, int x, int y){
 	int texWidth, texHeight;
 	unsigned int texture = loadTexture(texturePath, &texWidth, &texHeight);
 
-	texWidth += width;
-	texHeight += height;
+	texWidth += width, texHeight += height;
 
 	int screenX = 1920, screenY = 1080; //screen size
 
 
+	//  texture od 0px do 1000+px --> opengl od -1 do 1
 	float sizeX = texWidth / ((float)screenX * 0.5);
 	float sizeY = texHeight / (-(float)screenY * 0.5);
 
 	float vert[] = {
-		//  texture od 0px do 1000+px --> opengl od -1 do 1
 		sizeX,  0.0f,		1.0f,1.0f, //top right
 		sizeX,  sizeY,		1.0f,0.0f, //bottom right
 		0.0f,   sizeY,		0.0f,0.0f, //bottom left
@@ -95,6 +90,5 @@ Texture loadImage2d(char * texturePath, int width, int height, int x, int y){
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)(2 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 	
-
-	return (Texture) {VAO, VBO, EBO, indsSize, texture, texWidth, texHeight, x, y};
+	return (Texture) {VAO, VBO, EBO, indsSize, texture, texWidth, texHeight, x, y, 0.5};
 }

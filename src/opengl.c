@@ -25,7 +25,7 @@ void drawModel(Texture * t){
 	float Posx = (2.0f * (float)t->x) / 1920 - 1.0f; //(Muj kod) zamienia od 0 do 1920 na -1 do 1 dla opengl
 	float Posy = (2.0f * (float)(t->y * -1)) / 1080 + 1.0f; 
 	
-	glUniform3fv(ShaderPosUniform, 1, (Vec3) {Posx,Posy,t->z,0});
+	glUniform3fv(ShaderPosUniform, 1, (Vec3) {Posx,Posy,t->z});
 
 	glBindVertexArray(t->VAO);
 
@@ -33,13 +33,11 @@ void drawModel(Texture * t){
 	glDrawElements(GL_TRIANGLES, t->numIndices, GL_UNSIGNED_INT, 0);
 }
 
-int drawMenu(Texture * t){
-
-	drawModel(t);
-
+inline int colisionTex(Texture * t){
 	return colisionBox(t->x, t->y, t->width, t->height);
 }
 
+int isMouseHeld = 0;
 int colisionBox(int x, int y, int width, int height){
 
 	double cursorX,cursorY;
@@ -50,9 +48,19 @@ int colisionBox(int x, int y, int width, int height){
 	float bottomLeft = height + y;
 
 	// TODO napraw KOD
+	// !glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT)
+	if (isMouseHeld && !glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT))
+		isMouseHeld = 0;
+
+	if (isMouseHeld)
+		return 0;
+
+	if (!glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT))
+		return 0;
+
 	if (cursorX < topLeft && cursorX > x 
-			&& cursorY < bottomLeft && cursorY > y 
-			&& glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT)){
+			&& cursorY < bottomLeft && cursorY > y){
+		isMouseHeld = 1;
 		return 1;
 	}
 	return 0;

@@ -6,19 +6,19 @@
 #include "opengl.h"
 #include "fileLoad.h"
 #include "shader.h"
+#include "Gscenes.h"
 
 double cursorX,cursorY;
 void update(){
 	glfwPollEvents();
 	
 	glfwGetCursorPos(window,&cursorX,&cursorY);
+	updateScene();
 }
 
 Texture face = (Texture) {};
 Texture cube = (Texture) {};
 Texture play = (Texture) {};
-Texture room = (Texture) {};
-Texture nextButton = (Texture) {};
 
 enum GameState{
 	menu,
@@ -29,19 +29,15 @@ enum GameState gameState = menu;
 
 
 void renderMenu(){
-	if (drawMenu(&play))
+	if (colisionTex(&play))
 		gameState = game;
-
+	drawModel(&play);
 }
 
 void renderGame(){
-
-	drawModel(&room);
 	drawModel(&face);
 	drawModel(&face);
-
-	if (drawMenu(&nextButton))
-		gameState = game;
+	renderScene();
 }
 
 void renderPause(){
@@ -71,14 +67,12 @@ void render(){
 
 int main(){
 	openglInit();
+	initScene();
 
 	//Texture *array = (Texture *)malloc(sizeof(Texture));
 
-   	face = loadImage2d("../res/awesomeface.png",0,0,0,0);
-   	cube = loadImage2d("../res/container.jpg",0,0,0,0);
-   	play = loadImage2d("../res/menu.png",0,0,800,100);
-   	room = loadImage2d("../res/room2.png",100,0,0,0);
-   	nextButton = loadImage2d("../res/nextButton.png",-100,-100,1520,400);
+   	face = loadImage2d("../res/awesomeface.png",0,0);
+   	play = loadImage2d("../res/menu.png",800,100);
 
 	//loop
 	double timePerFrame = 1./60.; 
@@ -116,4 +110,3 @@ int main(){
 	}
 	glfwTerminate();
 }
-
