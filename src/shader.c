@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <string.h>
-#include <GL/glew.h>
+#include "GLbindings.h"
 
 void shaderError(unsigned int vertexShader){
 	int success;

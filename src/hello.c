@@ -8,7 +8,6 @@
 #include "shader.h"
 #include "Gscenes.h"
 
-Texture cursor = (Texture) {};
 Texture cube = (Texture) {};
 Texture play = (Texture) {};
 
@@ -20,9 +19,8 @@ enum GameState{
 enum GameState gameState = menu;
 
 
-double cursorX,cursorY;
 void updateMenu(){
-	if (drawMenu(&play))
+	if (drawMenu(&play, CLICK))
 		gameState = game;
 }
 
@@ -35,13 +33,9 @@ void updatePause(){
 
 void update(){
 	glfwPollEvents();
-	glfwGetCursorPos(window,&cursorX,&cursorY);
-
 	glClearColor(0.1f,0.1f,0.0f,1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	
-	cursor.x = cursorX, cursor.y = cursorY;
-	drawModel(&cursor);
+
 
 	switch (gameState) {
 		case game:
@@ -64,8 +58,6 @@ int main(){
 	openglInit();
 	initGame();
 
-   	cursor = loadImage2d("../res/awesomeface.png",0,0);
-	cursor.z = 0.1;
    	play = loadImage2d("../res/menu.png",800,100);
 
 	//loop
@@ -97,7 +89,6 @@ int main(){
 				FPSOldtime = newTime;
 			}
 		}
-
 	}
 	glfwTerminate();
 }

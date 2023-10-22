@@ -6,7 +6,9 @@ extern unsigned int shaderProgram;
 extern GLFWwindow* window;
 extern int screenX, screenY;
 
-int colisionBox(int x, int y, int width, int height);
-int drawMenu(Texture * t);
+#define HOLD 1
+#define CLICK 0
+int colisionBox(int x, int y, int width, int height, int dragOrClick);
+int drawMenu(Texture * t, int dragOrClick);
 void drawModel(Texture * t);
 int openglInit();

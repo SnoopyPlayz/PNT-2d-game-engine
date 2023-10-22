@@ -1,4 +1,4 @@
-#include <GL/glew.h>
+#include "GLbindings.h"
 #include <GLFW/glfw3.h>
 #include <stdio.h>
 #include "fileLoad.h"
@@ -33,16 +33,19 @@ void drawModel(Texture * t){
 	glDrawElements(GL_TRIANGLES, t->numIndices, GL_UNSIGNED_INT, 0);
 }
 
-inline int drawMenu(Texture * t){
+inline int drawMenu(Texture * t, int dragOrClick){
 	drawModel(t);
-	return colisionBox(t->x, t->y, t->width, t->height);
+	return colisionBox(t->x, t->y, t->width, t->height, dragOrClick);
 }
 
 int isMouseHeld = 0;
-int colisionBox(int x, int y, int width, int height){
+int colisionBox(int x, int y, int width, int height, int dragOrClick){
 
 	double cursorX,cursorY;
 	glfwGetCursorPos(window,&cursorX,&cursorY);
+	cursorY *= 1080. / screenY;
+	cursorX *= 1920. / screenX;
+
 	// zmien kolizie menu w zależności od rezolucji okienka
 	
 	float topLeft = width + x;
@@ -50,17 +53,20 @@ int colisionBox(int x, int y, int width, int height){
 
 	// TODO napraw KOD
 	// !glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT)
-	if (isMouseHeld && !glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT))
+	int mousePressed = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
+
+	if (isMouseHeld && !mousePressed) 
 		isMouseHeld = 0;
 
-	if (isMouseHeld)
-		return 0;
-
-	if (!glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT))
-		return 0;
 
 	if (cursorX < topLeft && cursorX > x 
 			&& cursorY < bottomLeft && cursorY > y){
+
+		if (!mousePressed) return 0;
+		if (dragOrClick) return 1;
+		if (isMouseHeld) return 0;
+
+
 		isMouseHeld = 1;
 		return 1;
 	}
@@ -86,8 +92,6 @@ int openglInit(){
 
         glfwMakeContextCurrent(window);
 
-        if (glewInit() != GLEW_OK)
-                return -1;
 
         glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, 1);
         glEnable(GL_DEBUG_OUTPUT);
@@ -98,7 +102,7 @@ int openglInit(){
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_FRONT);
 
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR);
 
 	// shader
 	shaderProgram = createShaderProgram("vertexShader.sh","fragmentShader.sh");
